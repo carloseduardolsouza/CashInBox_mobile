@@ -1,8 +1,14 @@
+import React from "react";
 import "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, TouchableOpacity, useWindowDimensions } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import {
+  createStackNavigator,
+  CardStyleInterpolators,
+} from "@react-navigation/stack";
+
+import { TabView, SceneMap } from "react-native-tab-view";
 
 // Telas
 import HomeScreen from "./Screens/HomeScreen/HomeScreen";
@@ -10,57 +16,113 @@ import Vendas from "./Screens/Vendas/Vendas";
 import Clientes from "./Screens/Clientes/Clientes";
 import Relatorios from "./Screens/Relatorios/Relatorios";
 import Estoque from "./Screens/Estoque/Estoque";
+import DetalhesVenda from "./Screens/DetalhesVenda/DetalhesVenda";
+import Configurações from "./Screens/Configurações/Configurações";
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function AnimatedTabs() {
+  const layout = useWindowDimensions();
+  const [index, setIndex] = React.useState(2); // Começa na Home
+
+  const routes = [
+    { key: "vendas", icon: "cart-outline" },
+    { key: "clientes", icon: "people-outline" },
+    { key: "home", icon: "home-outline" },
+    { key: "estoque", icon: "cube-outline" },
+    { key: "relatorios", icon: "document-text-outline" },
+  ];
+
+  const renderScene = SceneMap({
+    vendas: Vendas,
+    clientes: Clientes,
+    home: HomeScreen,
+    estoque: Estoque,
+    relatorios: Relatorios,
+  });
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={{ width: layout.width }}
+        swipeEnabled={true}
+        renderTabBar={() => null} // Remove aquela bosta de menu superior
+      />
+
+      {/* Menu Inferior */}
+      <View style={styles.menuInferior}>
+        {routes.map((route, i) => {
+          const focused = index === i;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              style={styles.itemTab}
+              onPress={() => setIndex(i)}
+            >
+              <Ionicons
+                name={focused ? route.icon.replace("-outline", "") : route.icon}
+                size={24}
+                color={focused ? "#0295ff" : "gray"}
+              />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        initialRouteName="Home"
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
-
-            if (route.name === "Home") {
-              iconName = focused ? "home" : "home-outline";
-            } else if (route.name === "Vendas") {
-              iconName = focused ? "cart" : "cart-outline";
-            } else if (route.name === "Clientes") {
-              iconName = focused ? "people" : "people-outline";
-            } else if (route.name === "Estoque") {
-              iconName = focused ? "cube" : "cube-outline";
-            } else if (route.name === "Relatorios") {
-              iconName = focused ? "document-text" : "document-text-outline";
-            }
-
-            return <Ionicons name={iconName} size={24} color={color} />;
-          },
-          tabBarActiveTintColor: "#0295ff",
-          tabBarInactiveTintColor: "gray",
-          headerShown: false,
-          tabBarShowLabel: false, // remove o texto
-          tabBarStyle: styles.menuInferior, // aplica o estilo
-          tabBarItemStyle: styles.itemTab, // opcional, melhora o toque
-        })}
+      <Stack.Navigator
+        screenOptions={{
+          headerTitleAlign: "center",
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        }}
       >
-        <Tab.Screen name="Vendas" component={Vendas} />
-        <Tab.Screen name="Clientes" component={Clientes} />
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Estoque" component={Estoque} />
-        <Tab.Screen name="Relatorios" component={Relatorios} />
-      </Tab.Navigator>
+        {/* Principal com abas animadas */}
+        <Stack.Screen
+          name="Main"
+          component={AnimatedTabs}
+          options={{ headerShown: false }}
+        />
+
+        {/* Telas secundárias */}
+        <Stack.Screen
+          name="DetalhesVenda"
+          component={DetalhesVenda}
+          options={{
+            title: "Detalhes da Venda",
+            headerBackTitle: "Voltar",
+          }}
+        />
+
+        <Stack.Screen
+          name="Configurações"
+          component={Configurações}
+          options={{
+            title: "Configurações",
+            headerBackTitle: "Voltar",
+          }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
   menuInferior: {
+    flexDirection: "row",
+    justifyContent: "space-around",
     borderRadius: 20,
     position: "absolute",
     bottom: 20,
-    left: 10, // <<< margem lateral
-    right: 10, // <<< margem lateral
+    left: 10,
+    right: 10,
     height: 70,
     backgroundColor: "#fff",
     elevation: 5,
@@ -68,9 +130,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    alignItems: "center",
   },
-
   itemTab: {
     paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

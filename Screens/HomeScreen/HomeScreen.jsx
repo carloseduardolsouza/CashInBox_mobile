@@ -1,3 +1,6 @@
+import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+
 import {
   View,
   Text,
@@ -5,63 +8,113 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
 } from "react-native";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
-const InfoCard = ({ value, label, variation, isPositive = true }) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <View style={styles.iconWrapper}>
-        <FontAwesome name="money" size={20} color="#0295ff" />
+const InfoCard = ({
+  value,
+  label,
+  icon,
+  iconLib,
+  variation,
+  isPositive = true,
+}) => {
+  const IconComponent = iconLib || FontAwesome;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.iconWrapper}>
+          <IconComponent name={icon} size={20} color="#0295ff" />
+        </View>
+        <Text style={styles.cardValue}>{value}</Text>
       </View>
-      <Text style={styles.cardValue}>{value}</Text>
-    </View>
-    <Text style={styles.labelCard}>
-      {label}{" "}
-      <Text style={isPositive ? styles.positivo : styles.negativo}>
-        {variation}
+      <Text style={styles.labelCard}>
+        {label}{" "}
+        <Text style={isPositive ? styles.positivo : styles.negativo}>
+          {variation}
+        </Text>
       </Text>
-    </Text>
-  </View>
-);
+    </View>
+  );
+};
 
 function HomeScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      console.log("Dados atualizados!");
+      setRefreshing(false);
+    }, 2000);
+  };
+
+  const navigation = useNavigation();
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Cash In Box</Text>
-          <Text>Bom dia</Text>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Cash In Box</Text>
+            <Text>Bom dia</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.userIcon}
+            onPress={() => navigation.navigate("Configurações")}
+          >
+            <Ionicons name="person" size={20} color="black" />
+          </TouchableOpacity>
         </View>
-        <View style={styles.userIcon}>
-          <Ionicons name="person" size={20} color="black" />
-        </View>
-      </View>
 
-      <View style={styles.cardsContainer}>
-        <InfoCard
-          value="R$ 80.900,00"
-          label="Faturamento/Mês"
-          variation="+5,8%"
-        />
-        <InfoCard value="R$ 1.000,00" label="Ticket Médio" variation="+2,3%" />
-        <InfoCard
-          value="12"
-          label="Orçamentos aberto"
-          variation="-1,2%"
-          isPositive={false}
-        />
-        <InfoCard
-          value="R$ 7.500,00"
-          label="Clientes ativos"
-          variation="+10,5%"
-        />
-      </View>
+        <View style={styles.cardsContainer}>
+          <InfoCard
+            value="R$ 80.900,00"
+            icon="money" // FontAwesome tem esse ícone
+            iconLib={FontAwesome}
+            label="Faturamento/Mês"
+            variation="+5,8%"
+          />
+          <InfoCard
+            value="R$ 1.000,00"
+            icon="analytics" // MaterialIcons tem "analytics"
+            iconLib={MaterialIcons}
+            label="Ticket Médio"
+            variation="+2,3%"
+          />
+          <InfoCard
+            value="12"
+            icon="newspaper-outline" // Ionicons tem "newspaper-outline"
+            iconLib={Ionicons}
+            label="Orçamentos abertos"
+            variation="-1,2%"
+            isPositive={false}
+          />
+          <InfoCard
+            value="153"
+            icon="people" // Ionicons tem "people"
+            iconLib={Ionicons}
+            label="Clientes ativos"
+            variation="+10,5%"
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 export default HomeScreen;
+
+// seu StyleSheet continua o mesmo
 
 const styles = StyleSheet.create({
   container: {
@@ -130,7 +183,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
   },
-  labelCard : {
+  labelCard: {
     color: "#3D3D3D",
     fontSize: 13,
   },
