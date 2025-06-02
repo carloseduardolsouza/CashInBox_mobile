@@ -11,29 +11,23 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 
-function CardVenda({ numero, pagamento, valor, itens, hora }) {
+function CardVenda({ numero, pagamento, valor, itens, descricao, hora }) {
   const navigation = useNavigation();
   return (
     <TouchableOpacity onPress={() => navigation.navigate('DetalhesVenda')}>
       <View style={styles.cardVenda}>
         <View style={styles.iconVenda}>
-          <MaterialIcons name="attach-money" size={20} color="white" />
+          <MaterialIcons name="attach-money" size={18} color="#000" />
         </View>
-
         <View style={styles.infoVenda}>
-          <Text style={styles.cliente}>
-            N {numero} - {pagamento}
-          </Text>
-          <Text style={styles.valor}>
-            R$ {valor} - {itens} itens
-          </Text>
+          <Text style={styles.numero}>Nº {numero} • {pagamento}</Text>
+          <Text style={styles.valor}>R$ {valor} : {itens} Item{itens > 1 ? 's' : ''}</Text>
+          <Text style={styles.descricao}>{descricao}</Text>
         </View>
-
-        <View>
-          <Text>{hora}</Text>
-        </View>
+        <Text style={styles.hora}>{hora}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -41,16 +35,30 @@ function CardVenda({ numero, pagamento, valor, itens, hora }) {
 
 function Vendas({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
-  const [vendas, setVendas] = useState(
-    Array.from({ length: 10 }, (_, i) => ({
-      id: i + 1,
-      numero: `000${i + 1}`,
-      pagamento: "Dinheiro",
-      valor: (2900 + i * 100).toFixed(2),
-      itens: 2 + i,
-      hora: "12:10",
-    }))
-  );
+  const [vendas, setVendas] = useState([
+    {
+      id: 1,
+      numero: '0003-1',
+      pagamento: 'Dinheiro',
+      valor: '0,00',
+      itens: 1,
+      descricao: '1x headset',
+      hora: '00:21',
+      data: '2 JUN'
+    },
+    {
+      id: 2,
+      numero: '0002-1',
+      pagamento: 'Dinheiro',
+      valor: '20,00',
+      itens: 2,
+      descricao: '1x headset 1x cômoda capri...',
+      hora: '12:01',
+      data: '31 MAI 2025'
+    }
+  ]);
+
+  const total = vendas.reduce((acc, venda) => acc + parseFloat(venda.valor.replace(',', '.')), 0).toFixed(2);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -59,12 +67,14 @@ function Vendas({ navigation }) {
         ...prev,
         {
           id: prev.length + 1,
-          numero: `000${prev.length + 1}`,
+          numero: `000${prev.length + 1}-1`,
           pagamento: "Dinheiro",
-          valor: (3000 + prev.length * 100).toFixed(2),
-          itens: 2 + prev.length,
+          valor: "10,00",
+          itens: 1,
+          descricao: "1x item novo",
           hora: "12:10",
-        },
+          data: "2 JUN"
+        }
       ]);
       setRefreshing(false);
     }, 1000);
@@ -72,26 +82,43 @@ function Vendas({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Vendas</Text>
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {vendas.map((venda) => (
-          <CardVenda
-            key={venda.id}
-            onPress={() => navigation.navigate("DetalhesVenda", { id: venda.id })}
-            numero={venda.numero}
-            pagamento={venda.pagamento}
-            valor={venda.valor}
-            itens={venda.itens}
-            hora={venda.hora}
+        <Text style={styles.periodo}>Últimos 7 dias</Text>
+        <Text style={styles.total}>Total: R$ {total}</Text>
+
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Código"
+            style={styles.input}
+            placeholderTextColor="#888"
           />
+        </View>
+
+        {vendas.map((venda, index) => (
+          <View key={venda.id}>
+            {/* Mostra a data se for diferente da anterior */}
+            {(index === 0 || venda.data !== vendas[index - 1].data) && (
+              <View style={styles.dataContainer}>
+                <Text style={styles.dataTexto}>
+                  {venda.data === '2 JUN' ? 'HOJE, 2 JUN' : venda.data}
+                </Text>
+              </View>
+            )}
+
+            <CardVenda
+              numero={venda.numero}
+              pagamento={venda.pagamento}
+              valor={venda.valor}
+              itens={venda.itens}
+              descricao={venda.descricao}
+              hora={venda.hora}
+            />
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -102,56 +129,74 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    padding: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    backgroundColor: "#fff",
   },
   scrollContainer: {
-    paddingBottom: 20,
+    padding: 20,
+  },
+  periodo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  total: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#333',
+  },
+  searchContainer: {
+    marginBottom: 15,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    color: '#000'
+  },
+  dataContainer: {
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  dataTexto: {
+    fontWeight: 'bold',
+    color: '#333',
   },
   cardVenda: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
     marginBottom: 10,
-    marginHorizontal: 15,
     borderRadius: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
   iconVenda: {
-    backgroundColor: "green",
-    height: 30,
-    width: 30,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#e0f7e9",
+    padding: 10,
+    borderRadius: 50,
     marginRight: 10,
   },
   infoVenda: {
     flex: 1,
-    marginHorizontal: 10,
+  },
+  numero: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   valor: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  cliente: {
     fontSize: 14,
-    color: "#555",
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  descricao: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
+  },
+  hora: {
+    fontSize: 12,
+    color: '#888',
   },
 });
 

@@ -14,8 +14,8 @@ import { FontAwesome } from "@expo/vector-icons";
 const CardItemDetalhesVenda = () => (
   <View style={styles.cardItemDetalhesVenda}>
     <Text>1</Text>
-    <Text>Comoda Capri</Text>
-    <Text>R$ 200,00</Text>
+    <Text>headset</Text>
+    <Text>R$ 0,00</Text>
   </View>
 );
 
@@ -28,68 +28,76 @@ function DetalhesVenda() {
     console.log("Cancelar Venda clicado");
   };
 
+  const handleCompartilhar = () => {
+    console.log("Compartilhar clicado");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>R$ 200,00</Text>
-          <Text>Venda N0002 - 10 mai 2025 - 10:40</Text>
-        </View>
-        <FontAwesome name="money" size={20} color="black" />
-      </View>
-
-      <View>
-        <View style={styles.infoVendedorCliente}>
-          <Text>Vendedor:</Text>
-          <Text>Carlos Eduardo</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.header}>
+          <Text style={styles.valor}>R$ 0,00</Text>
+          <FontAwesome name="money" size={40} color="#90ee90" />
         </View>
 
-        <View style={styles.infoVendedorCliente}>
-          <Text>Cliente:</Text>
-          <Text>Julia dos Santos Bahr</Text>
+        <Text style={styles.numeroVenda}>Venda Nº 0003-1 APP</Text>
+
+        <View style={styles.infoLinha}>
+          <Text style={styles.label}>Data</Text>
+          <Text style={styles.infoText}>2 de Junho de 2025 - 00:21</Text>
         </View>
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.textQuantidadeScroll}>10 itens</Text>
+        <View style={styles.infoLinha}>
+          <Text style={styles.label}>Vendedor</Text>
+          <Text style={styles.infoText}>Administrador</Text>
+        </View>
 
-        {Array.from({ length: 2 }).map((_, index) => (
-          <CardItemDetalhesVenda key={index} />
-        ))}
+        <View style={styles.itensSection}>
+          <Text style={styles.label}>1 Item</Text>
+          <Text style={styles.infoQuantidade}>Quantidade: 1</Text>
 
-        <View style={styles.areaInfoPag}>
-          <View style={styles.areasInfoPagamentos}>
-            <Text>Acrescimos</Text>
-            <Text>R$ 00,00 / 00,00%</Text>
-          </View>
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+          <CardItemDetalhesVenda />
+        </View>
 
-          <View style={styles.areasInfoPagamentos}>
-            <Text>Descontos</Text>
-            <Text>R$ 00,00 / 00,00%</Text>
-          </View>
-
-          <View style={styles.areasInfoPagamentos}>
-            <Text style={styles.totalInfoPagamento}>Total</Text>
-            <Text style={styles.totalInfoPagamento}>R$ 2.544,60</Text>
-          </View>
+        <View style={styles.pagamento}>
+          <Text style={styles.pagamentoText}>Desconto: R$ 00,00 / 00,00%</Text>
+          <Text style={styles.pagamentoText}>Acrescimos: R$ 00,00 / 00,00%</Text>
+          <Text style={styles.totalText}>Total: R$ 0,00</Text>
         </View>
       </ScrollView>
 
-      <View style={styles.fixedButtons}>
+      {/* Botão Cancelar Venda fixo abaixo dos outros dois */}
+      <TouchableOpacity
+        style={styles.cancelarVendaButton}
+        onPress={handleCancelarVenda}
+      >
+        <Text style={styles.cancelarVendaText}>Cancelar Venda</Text>
+      </TouchableOpacity>
+      {/* Grupo dos botões Compartilhar e PDF */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={[styles.button, styles.shareButton]}
+          onPress={handleCompartilhar}
+        >
+          <Text style={styles.buttonText}>COMPARTILHAR</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.button, styles.pdfButton]}
           onPress={handleGerarPDF}
         >
-          <Text style={styles.buttonText}>Gerar PDF</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
-          onPress={handleCancelarVenda}
-        >
-          <Text style={styles.buttonText}>Cancelar Venda</Text>
+          <Text style={styles.buttonText}>PDF</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -101,85 +109,103 @@ export default DetalhesVenda;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? 25 : 0,
+  },
+  scrollContainer: {
+    paddingBottom: 120, // espaço pros botões fixos
+    padding: 20
   },
   header: {
-    padding: 20,
-    paddingTop: Platform.OS === "android" ? 10 : 20,  // Evita excesso no Android
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 20,
   },
-  title: {
+  valor: {
     fontSize: 28,
     fontWeight: "bold",
   },
-  infoVendedorCliente: {
+  numeroVenda: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 20,
+  },
+  infoLinha: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "90%",
-    alignSelf: "center",
-    borderBottomColor: "black",
-    borderBottomWidth: 1,
     marginBottom: 10,
-    paddingBottom: 5,
   },
-  textQuantidadeScroll: {
-    marginLeft: 10,
-    fontSize: 20,
-    fontWeight: "bold",
+  label: {
+    fontWeight: "600",
+  },
+  infoText: {
+    color: "#333",
+  },
+  itensSection: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    paddingTop: 10,
+  },
+  infoQuantidade: {
     marginBottom: 10,
+    color: "#666",
   },
   cardItemDetalhesVenda: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 15,
-    borderBottomColor: "black",
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    marginHorizontal: 10,
+    borderBottomColor: "#ddd",
   },
-  areaInfoPag: {
-    margin: 15,
+  pagamento: {
+    marginTop: 20,
     borderTopWidth: 1,
-    borderTopColor: "black",
+    borderTopColor: "#ddd",
     paddingTop: 10,
   },
-  areasInfoPagamentos: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  pagamentoText: {
     marginBottom: 5,
   },
-  totalInfoPagamento: {
-    fontSize: 18,
+  totalText: {
     fontWeight: "bold",
+    fontSize: 16,
   },
-  scrollContent: {
-    paddingBottom: 120,
-  },
-  fixedButtons: {
-    position: "absolute",
-    bottom: 30,
-    left: 0,
-    right: 0,
+  actionButtons: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: 20,
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
   },
   button: {
     flex: 1,
     marginHorizontal: 5,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: "center",
   },
-  pdfButton: {
-    backgroundColor: "#4CAF50",
+  shareButton: {
+    backgroundColor: "#2196F3",
   },
-  cancelButton: {
-    backgroundColor: "#F44336",
+  pdfButton: {
+    backgroundColor: "#2196F3",
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  cancelarVendaButton: {
+    padding: 15,
+    backgroundColor: "#fff",
+    alignItems: "flex-start",
+  },
+  cancelarVendaText: {
+    color: "#f00",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

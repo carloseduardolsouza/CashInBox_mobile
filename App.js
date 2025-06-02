@@ -17,7 +17,9 @@ import Clientes from "./Screens/Clientes/Clientes";
 import Relatorios from "./Screens/Relatorios/Relatorios";
 import Estoque from "./Screens/Estoque/Estoque";
 import DetalhesVenda from "./Screens/DetalhesVenda/DetalhesVenda";
+import DetalhesProdutos from "./Screens/DetalhesProdutos/DetalhesProdutos";
 import Configurações from "./Screens/Configurações/Configurações";
+import DetalhesCliente from "./Screens/DetalhesCliente/DetalhesCliente";
 
 const Stack = createStackNavigator();
 
@@ -106,6 +108,24 @@ export default function App() {
           component={Configurações}
           options={{
             title: "Configurações",
+            headerBackTitle: "Voltar",
+          }}
+        />
+
+        <Stack.Screen
+          name="DetalhesProdutos"
+          component={DetalhesProdutos}
+          options={{
+            title: "Detalhes do produto",
+            headerBackTitle: "Voltar",
+          }}
+        />
+
+        <Stack.Screen
+          name="DetalhesCliente"
+          component={DetalhesCliente}
+          options={{
+            title: "Detalhes do Cliente",
             headerBackTitle: "Voltar",
           }}
         />
