@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   View,
@@ -14,20 +14,45 @@ import {
   TextInput,
 } from "react-native";
 
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
+
 function CardVenda({ numero, pagamento, valor, itens, descricao, hora }) {
   const navigation = useNavigation();
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   return (
-    <TouchableOpacity onPress={() => navigation.navigate('DetalhesVenda')}>
-      <View style={styles.cardVenda}>
+    <TouchableOpacity onPress={() => navigation.navigate("DetalhesVenda")}>
+      <View
+        style={[
+          styles.cardVenda,
+          { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+        ]}
+      >
         <View style={styles.iconVenda}>
           <MaterialIcons name="attach-money" size={18} color="#000" />
         </View>
         <View style={styles.infoVenda}>
-          <Text style={styles.numero}>Nº {numero} • {pagamento}</Text>
-          <Text style={styles.valor}>R$ {valor} : {itens} Item{itens > 1 ? 's' : ''}</Text>
-          <Text style={styles.descricao}>{descricao}</Text>
+          <Text
+            style={[styles.numero, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Nº {numero} • {pagamento}
+          </Text>
+          <Text
+            style={[styles.valor, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            R$ {valor} : {itens} Item{itens > 1 ? "s" : ""}
+          </Text>
+          <Text
+            style={[styles.descricao, { color: isDarkMode ? "gray" : "#333" }]}
+          >
+            {descricao}
+          </Text>
         </View>
-        <Text style={styles.hora}>{hora}</Text>
+        <Text style={[styles.hora, { color: isDarkMode ? "white" : "#333" }]}>
+          {hora}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -38,27 +63,29 @@ function Vendas({ navigation }) {
   const [vendas, setVendas] = useState([
     {
       id: 1,
-      numero: '0003-1',
-      pagamento: 'Dinheiro',
-      valor: '0,00',
+      numero: "0003-1",
+      pagamento: "Dinheiro",
+      valor: "0,00",
       itens: 1,
-      descricao: '1x headset',
-      hora: '00:21',
-      data: '2 JUN'
+      descricao: "1x headset",
+      hora: "00:21",
+      data: "2 JUN",
     },
     {
       id: 2,
-      numero: '0002-1',
-      pagamento: 'Dinheiro',
-      valor: '20,00',
+      numero: "0002-1",
+      pagamento: "Dinheiro",
+      valor: "20,00",
       itens: 2,
-      descricao: '1x headset 1x cômoda capri...',
-      hora: '12:01',
-      data: '31 MAI 2025'
-    }
+      descricao: "1x headset 1x cômoda capri...",
+      hora: "12:01",
+      data: "31 MAI 2025",
+    },
   ]);
 
-  const total = vendas.reduce((acc, venda) => acc + parseFloat(venda.valor.replace(',', '.')), 0).toFixed(2);
+  const total = vendas
+    .reduce((acc, venda) => acc + parseFloat(venda.valor.replace(",", ".")), 0)
+    .toFixed(2);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -73,23 +100,31 @@ function Vendas({ navigation }) {
           itens: 1,
           descricao: "1x item novo",
           hora: "12:10",
-          data: "2 JUN"
-        }
+          data: "2 JUN",
+        },
       ]);
       setRefreshing(false);
     }, 1000);
   };
 
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Text style={styles.periodo}>Últimos 7 dias</Text>
-        <Text style={styles.total}>Total: R$ {total}</Text>
+        <Text style={[styles.periodo , { color: isDarkMode ? "white" : "#333" }]}>Últimos 7 dias</Text>
+        <Text style={[styles.total , { color: isDarkMode ? "white" : "#333" }]}>Total: R$ {total}</Text>
 
         <View style={styles.searchContainer}>
           <TextInput
@@ -104,8 +139,8 @@ function Vendas({ navigation }) {
             {/* Mostra a data se for diferente da anterior */}
             {(index === 0 || venda.data !== vendas[index - 1].data) && (
               <View style={styles.dataContainer}>
-                <Text style={styles.dataTexto}>
-                  {venda.data === '2 JUN' ? 'HOJE, 2 JUN' : venda.data}
+                <Text style={[styles.dataTexto , { color: isDarkMode ? "white" : "#333" }]}>
+                  {venda.data === "2 JUN" ? "HOJE, 2 JUN" : venda.data}
                 </Text>
               </View>
             )}
@@ -136,30 +171,30 @@ const styles = StyleSheet.create({
   },
   periodo: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   total: {
     fontSize: 16,
     marginBottom: 10,
-    color: '#333',
+    color: "#333",
   },
   searchContainer: {
     marginBottom: 15,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    color: '#000'
+    color: "#000",
   },
   dataContainer: {
     marginTop: 15,
     marginBottom: 5,
   },
   dataTexto: {
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   cardVenda: {
     flexDirection: "row",
@@ -168,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     marginBottom: 10,
     borderRadius: 10,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   iconVenda: {
@@ -182,21 +217,21 @@ const styles = StyleSheet.create({
   },
   numero: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   valor: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 2,
   },
   descricao: {
     fontSize: 12,
-    color: '#777',
+    color: "#777",
     marginTop: 2,
   },
   hora: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
   },
 });
 

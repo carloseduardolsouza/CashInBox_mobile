@@ -9,29 +9,75 @@ import {
   ScrollView,
 } from "react-native";
 
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
+
 function DetalhesCliente() {
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.divInfoPrincipais}>
             <Image
-              style={styles.avatar}
+              style={[
+                styles.avatar,
+                { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
+              ]}
               source={{
                 uri: "https://via.placeholder.com/100x100.png?text=Foto",
               }}
             />
             <View style={styles.divInfoPrincipaisText}>
-              <Text style={styles.nome}>Cliente</Text>
+              <Text
+                style={[styles.nome, { color: isDarkMode ? "white" : "#333" }]}
+              >
+                Cliente
+              </Text>
               <View style={styles.vendasInfo}>
                 <View style={styles.vendaItem}>
-                  <Text style={styles.vendaLabel}>Compras</Text>
-                  <Text style={styles.vendaValor}>R$ 0,00</Text>
+                  <Text
+                    style={[
+                      styles.vendaLabel,
+                      { color: isDarkMode ? "white" : "#333" },
+                    ]}
+                  >
+                    Compras
+                  </Text>
+                  <Text
+                    style={[
+                      styles.vendaValor,
+                      { color: isDarkMode ? "white" : "#333" },
+                    ]}
+                  >
+                    R$ 0,00
+                  </Text>
                 </View>
                 <View style={styles.vendaItem}>
-                  <Text style={styles.vendaLabel}>Qtd. Compras</Text>
-                  <Text style={styles.vendaValor}>0</Text>
+                  <Text
+                    style={[
+                      styles.vendaLabel,
+                      { color: isDarkMode ? "white" : "#333" },
+                    ]}
+                  >
+                    Qtd. Compras
+                  </Text>
+                  <Text
+                    style={[
+                      styles.vendaValor,
+                      { color: isDarkMode ? "white" : "#333" },
+                    ]}
+                  >
+                    0
+                  </Text>
                 </View>
               </View>
             </View>
@@ -40,36 +86,68 @@ function DetalhesCliente() {
 
         {/* Formulário */}
         <View style={styles.form}>
-          <Text style={styles.label}>Nome</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Nome
+          </Text>
           <TextInput style={styles.input} placeholder="Nome do cliente" />
 
-          <Text style={styles.label}>Telefone</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Telefone
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="+55"
             keyboardType="phone-pad"
           />
 
-          <Text style={styles.label}>E-mail</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            E-mail
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="email@exemplo.com"
             keyboardType="email-address"
           />
 
-          <Text style={styles.label}>Código</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Código
+          </Text>
           <TextInput style={styles.input} placeholder="1-1" />
 
-          <Text style={styles.label}>RG/I.E.</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            RG/I.E.
+          </Text>
           <TextInput style={styles.input} placeholder="Opcional" />
 
-          <Text style={styles.label}>CPF/CNPJ</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            CPF/CNPJ
+          </Text>
           <TextInput style={styles.input} placeholder="Opcional" />
 
-          <Text style={styles.label}>Observação</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Observação
+          </Text>
           <TextInput style={styles.input} placeholder="..." />
 
-          <Text style={styles.label}>Endereço</Text>
+          <Text
+            style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Endereço
+          </Text>
           <TextInput style={styles.input} placeholder="..." />
         </View>
 
@@ -96,10 +174,10 @@ const styles = StyleSheet.create({
   },
   divInfoPrincipais: {
     flexDirection: "row",
-    padding: 10
+    padding: 10,
   },
   divInfoPrincipaisText: {
-    padding: 20
+    padding: 20,
   },
   avatar: {
     width: 100,
@@ -120,7 +198,7 @@ const styles = StyleSheet.create({
   },
   vendaItem: {
     alignItems: "flex-start",
-    width: 100
+    width: 100,
   },
   vendaLabel: {
     fontSize: 12,

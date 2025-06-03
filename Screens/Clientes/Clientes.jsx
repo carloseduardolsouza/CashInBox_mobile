@@ -12,38 +12,45 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
+
 function Clientes() {
   const navigation = useNavigation();
+
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   const CardClientes = ({ nomeCliente }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card , { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" }]}
       onPress={() => navigation.navigate("DetalhesCliente")}
     >
       <Image
         source={{ uri: "https://via.placeholder.com/50" }}
-        style={styles.avatar}
+        style={[styles.avatar , { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" }]}
       />
       <View style={styles.info}>
-        <Text style={styles.name}>{nomeCliente}</Text>
-        <Text style={styles.code}>Código 001</Text>
+        <Text style={[styles.name , { color: isDarkMode ? "white" : "#333" }]}>{nomeCliente}</Text>
+        <Text style={[styles.code , { color: isDarkMode ? "gray" : "#333" }]}>Código 001</Text>
       </View>
     </TouchableOpacity>
   );
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container , { backgroundColor: isDarkMode ? "#121212" : "#fff" }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Clientes(0)</Text>
+          <Text style={[styles.title , { color: isDarkMode ? "white" : "#333" }]}>Clientes(0)</Text>
 
           <TouchableOpacity style={styles.buttonAdicionarCliente}>
             <Text style={styles.buttonText}>+</Text>
           </TouchableOpacity>
         </View>
 
-        <TextInput placeholder="Pesquisar cliente" style={styles.searchInput} />
+        <TextInput placeholder="Pesquisar cliente" style={styles.searchInput} placeholderTextColor="#888"/>
 
         <View>
           <CardClientes nomeCliente={"Carlos Eduardo Souza"} />

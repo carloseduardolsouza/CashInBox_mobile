@@ -9,11 +9,17 @@ import {
   Dimensions,
 } from "react-native";
 import { LineChart, PieChart } from "react-native-chart-kit";
+import { RFValue } from "react-native-responsive-fontsize";
+import Icon from "react-native-vector-icons/Feather";
 
-const screenWidth = Dimensions.get("window").width;
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 function Relatorios() {
   const [periodo, setPeriodo] = useState("mensal");
+  const { isDarkMode } = useTheme();
 
   const dadosResumo = {
     vendas: 12500.45,
@@ -37,64 +43,43 @@ function Relatorios() {
             : periodo === "mensal"
             ? [2000, 2500, 2200, 2700, 3000, 3500, 3200]
             : [15000, 18000, 22000, 26000],
-        color: (opacity = 1) => `rgba(2, 149, 255, ${opacity})`,  // Azul principal
+        color: (opacity = 1) => `rgba(2, 149, 255, ${opacity})`,
         strokeWidth: 3,
       },
     ],
   };
 
   const dadosGraficoPizza = [
-    {
-      name: "Produto A",
-      population: 45,
-      color: "#0295ff",
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    },
-    {
-      name: "Produto B",
-      population: 30,
-      color: "#4FB9FF",
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    },
-    {
-      name: "Produto C",
-      population: 15,
-      color: "#8CD3FF",
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    },
-    {
-      name: "Outros",
-      population: 10,
-      color: "#CCE9FF",
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    },
+    { name: "Produto A", population: 45, color: "#0295ff", legendFontColor: "#333", legendFontSize: RFValue(12) },
+    { name: "Produto B", population: 30, color: "#4FB9FF", legendFontColor: "#333", legendFontSize: RFValue(12) },
+    { name: "Produto C", population: 15, color: "#8CD3FF", legendFontColor: "#333", legendFontSize: RFValue(12) },
+    { name: "Outros", population: 10, color: "#CCE9FF", legendFontColor: "#333", legendFontSize: RFValue(12) },
   ];
 
+  const chartConfig = {
+    backgroundGradientFrom: isDarkMode ? "#2F2F2F" : "#fff",
+    backgroundGradientTo: isDarkMode ? "#2F2F2F" : "#fff",
+    color: (opacity = 1) => `rgba(2, 149, 255, ${opacity})`,
+    labelColor: () => isDarkMode ? "#fff" : "#333",
+    strokeWidth: 2,
+    useShadowColorFromDataset: false,
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? "#121212" : "#fff" }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.titulo}>Relatórios</Text>
+        <Text style={styles.titulo}>
+          <Icon name="bar-chart-2" size={RFValue(24)} color="#0295ff" /> Relatórios
+        </Text>
 
         <View style={styles.filtros}>
           {["diário", "mensal", "anual"].map((p) => (
             <TouchableOpacity
               key={p}
               onPress={() => setPeriodo(p)}
-              style={[
-                styles.botaoFiltro,
-                periodo === p && styles.botaoFiltroAtivo,
-              ]}
+              style={[styles.botaoFiltro, periodo === p && styles.botaoFiltroAtivo]}
             >
-              <Text
-                style={[
-                  styles.textoBotaoFiltro,
-                  periodo === p && styles.textoBotaoFiltroAtivo,
-                ]}
-              >
+              <Text style={[styles.textoBotaoFiltro, periodo === p && styles.textoBotaoFiltroAtivo]}>
                 {p.charAt(0).toUpperCase() + p.slice(1)}
               </Text>
             </TouchableOpacity>
@@ -102,49 +87,49 @@ function Relatorios() {
         </View>
 
         <View style={styles.resumoContainer}>
-          <View style={styles.cardResumo}>
-            <Text style={styles.cardTitulo}>Vendas</Text>
-            <Text style={styles.cardValor}>
-              R$ {dadosResumo.vendas.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.cardResumo}>
-            <Text style={styles.cardTitulo}>Despesas</Text>
-            <Text style={styles.cardValor}>
-              R$ {dadosResumo.despesas.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.cardResumo}>
-            <Text style={styles.cardTitulo}>Lucro</Text>
-            <Text style={styles.cardValor}>
-              R$ {dadosResumo.lucro.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.cardResumo}>
-            <Text style={styles.cardTitulo}>Clientes</Text>
-            <Text style={styles.cardValor}>{dadosResumo.clientes}</Text>
-          </View>
+          {Object.entries(dadosResumo).map(([chave, valor]) => (
+            <View
+              key={chave}
+              style={[
+                styles.cardResumo,
+                { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+              ]}
+            >
+              <Icon name={icones[chave]} size={RFValue(20)} color="#0295ff" />
+              <Text style={[styles.cardTitulo, { color: isDarkMode ? "white" : "#333" }]}>
+                {capitalize(chave)}
+              </Text>
+              <Text style={[styles.cardValor, { color: isDarkMode ? "gray" : "#333" }]}>
+                {chave === "clientes" ? valor : `R$ ${valor.toFixed(2)}`}
+              </Text>
+            </View>
+          ))}
         </View>
 
-        <Text style={styles.secaoTitulo}>Vendas no período</Text>
+        <Text style={[styles.secaoTitulo, { color: isDarkMode ? "#fff" : "#000" }]}>Vendas no período</Text>
+
         <LineChart
           data={dadosGraficoLinha}
-          width={screenWidth - 32}
-          height={220}
+          width={screenWidth - RFValue(32)}
+          height={RFValue(220)}
           chartConfig={chartConfig}
           bezier
           fromZero
-          style={styles.grafico}
+          style={[
+            styles.grafico,
+            { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+          ]}
         />
 
-        <Text style={styles.secaoTitulo}>Produtos mais vendidos</Text>
+        <Text style={[styles.secaoTitulo, { color: isDarkMode ? "#fff" : "#000" }]}>Produtos mais vendidos</Text>
+
         <PieChart
           data={dadosGraficoPizza}
-          width={screenWidth - 32}
-          height={220}
+          width={screenWidth - RFValue(32)}
+          height={RFValue(220)}
           chartConfig={chartConfig}
+          backgroundColor={isDarkMode ? "#2F2F2F" : "#f9f9f9"}
           accessor="population"
-          backgroundColor="transparent"
           paddingLeft="15"
           absolute
           style={styles.grafico}
@@ -154,40 +139,39 @@ function Relatorios() {
   );
 }
 
-const chartConfig = {
-  backgroundGradientFrom: "#fff",
-  backgroundGradientTo: "#fff",
-  color: (opacity = 1) => `rgba(2, 149, 255, ${opacity})`,
-  labelColor: () => "black",
-  strokeWidth: 2,
-  useShadowColorFromDataset: false,
+const icones = {
+  vendas: "shopping-cart",
+  despesas: "credit-card",
+  lucro: "dollar-sign",
+  clientes: "users",
 };
+
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   container: {
-    padding: 16,
+    padding: RFValue(16),
     alignItems: "center",
   },
   titulo: {
-    fontSize: 28,
+    fontSize: RFValue(24),
     fontWeight: "bold",
-    marginBottom: 24,
+    marginBottom: RFValue(24),
     color: "#0295ff",
   },
   filtros: {
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
-    marginBottom: 24,
+    marginBottom: RFValue(24),
   },
   botaoFiltro: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
+    paddingVertical: RFValue(8),
+    paddingHorizontal: RFValue(16),
+    borderRadius: RFValue(20),
     borderWidth: 1,
     borderColor: "#0295ff",
     backgroundColor: "#fff",
@@ -198,7 +182,7 @@ const styles = StyleSheet.create({
   textoBotaoFiltro: {
     color: "#0295ff",
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: RFValue(14),
   },
   textoBotaoFiltroAtivo: {
     color: "#fff",
@@ -208,14 +192,13 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: 32,
+    marginBottom: RFValue(24),
   },
   cardResumo: {
-    backgroundColor: "#fff",
     width: "48%",
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 12,
+    padding: RFValue(12),
+    marginBottom: RFValue(12),
+    borderRadius: RFValue(12),
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -224,29 +207,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardTitulo: {
-    fontSize: 16,
-    color: "black",
+    fontSize: RFValue(14),
     fontWeight: "600",
-    marginBottom: 8,
+    marginTop: RFValue(8),
   },
   cardValor: {
-    fontSize: 22,
+    fontSize: RFValue(18),
     fontWeight: "bold",
-    color: "#525252",
-  },
-  secaoTitulo: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#525252",
-    marginBottom: 12,
-    alignSelf: "flex-start",
+    marginTop: RFValue(4),
   },
   grafico: {
-    borderWidth: 1,
-    borderColor: "#A8A8A8", // Preto mesmo
-    borderRadius: 8,
-    marginVertical: 16,
-    backgroundColor: "#fff",
+    borderRadius: RFValue(12),
+    padding: RFValue(8),
+    marginVertical: RFValue(8),
+  },
+  secaoTitulo: {
+    fontSize: RFValue(16),
+    fontWeight: "bold",
+    marginTop: RFValue(16),
   },
 });
 

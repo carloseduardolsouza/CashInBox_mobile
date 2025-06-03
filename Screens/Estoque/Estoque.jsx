@@ -10,7 +10,8 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
 import { useNavigation } from "@react-navigation/native";
 
 function Estoque() {
@@ -19,34 +20,56 @@ function Estoque() {
   };
   const navigation = useNavigation();
 
-  const CardProdutos = ({ nomeProdutos, preco }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        navigation.navigate("DetalhesProdutos", {
-          nomeProduto: nomeProdutos,
-        })
-      }
-    >
-      <Image
-        source={{ uri: "https://via.placeholder.com/50" }}
-        style={styles.avatar}
-      />
-      <View style={styles.info}>
-        <Text style={styles.name}>{nomeProdutos}</Text>
-        <Text style={styles.code}>{preco}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const CardProdutos = ({ nomeProdutos, preco }) => {
+    // Pega o estado do tema e a função pra mudar
+    const { isDarkMode } = useTheme();
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.card,
+          { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+        ]}
+        onPress={() =>
+          navigation.navigate("DetalhesProdutos", {
+            nomeProduto: nomeProdutos,
+          })
+        }
+      >
+        <Image
+          source={{ uri: "https://via.placeholder.com/50" }}
+          style={[
+            styles.avatar,
+            { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
+          ]}
+        />
+        <View style={styles.info}>
+          <Text style={[styles.name, { color: isDarkMode ? "white" : "#333" }]}>
+            {nomeProdutos}
+          </Text>
+          <Text style={[styles.code, { color: isDarkMode ? "gray" : "#333" }]}>
+            {preco}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container , { backgroundColor: isDarkMode ? "#121212" : "#fff" }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Produtos(0)</Text>
+          <Text
+            style={[styles.title, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Produtos(0)
+          </Text>
 
           <TouchableOpacity
             style={styles.buttonAdicionarCliente}
@@ -56,7 +79,11 @@ function Estoque() {
           </TouchableOpacity>
         </View>
 
-        <TextInput placeholder="Pesquisar Produto" style={styles.searchInput} />
+        <TextInput
+          placeholder="Pesquisar Produto"
+          style={styles.searchInput}
+          placeholderTextColor="#888"
+        />
 
         <View>
           <CardProdutos nomeProdutos={"Comoda Capri"} preco={"R$ 200,00"} />

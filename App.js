@@ -1,14 +1,21 @@
 import React from "react";
 import "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View, TouchableOpacity, useWindowDimensions } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  useWindowDimensions,
+  StatusBar,
+} from "react-native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import {
   createStackNavigator,
   CardStyleInterpolators,
 } from "@react-navigation/stack";
-
 import { TabView, SceneMap } from "react-native-tab-view";
+import * as Animatable from "react-native-animatable";
+import { AppProvider, useTheme } from "./Context/Provider";
 
 // Telas
 import HomeScreen from "./Screens/HomeScreen/HomeScreen";
@@ -26,6 +33,7 @@ const Stack = createStackNavigator();
 function AnimatedTabs() {
   const layout = useWindowDimensions();
   const [index, setIndex] = React.useState(2); // Começa na Home
+  const { isDarkMode } = useTheme();
 
   const routes = [
     { key: "vendas", icon: "cart-outline" },
@@ -45,30 +53,47 @@ function AnimatedTabs() {
 
   return (
     <View style={{ flex: 1 }}>
+      <StatusBar
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        backgroundColor={isDarkMode ? "#121212" : "#FFFFFF"}
+      />
+
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
         swipeEnabled={true}
-        renderTabBar={() => null} // Remove aquela bosta de menu superior
+        renderTabBar={() => null}
       />
 
-      {/* Menu Inferior */}
-      <View style={styles.menuInferior}>
+      <View
+        style={[
+          styles.menuInferior,
+          { backgroundColor: isDarkMode ? "#2F2F2F" : "#FFFFFF" },
+        ]}
+      >
         {routes.map((route, i) => {
           const focused = index === i;
+
           return (
             <TouchableOpacity
               key={route.key}
               style={styles.itemTab}
               onPress={() => setIndex(i)}
+              activeOpacity={0.8}
             >
-              <Ionicons
-                name={focused ? route.icon.replace("-outline", "") : route.icon}
-                size={24}
-                color={focused ? "#0295ff" : "gray"}
-              />
+              <Animatable.View
+                animation={focused ? "bounceIn" : undefined}
+                duration={800}
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                <Ionicons
+                  name={focused ? route.icon.replace("-outline", "") : route.icon}
+                  size={28}
+                  color={focused ? "#0295ff" : "gray"}
+                />
+              </Animatable.View>
             </TouchableOpacity>
           );
         })}
@@ -79,39 +104,47 @@ function AnimatedTabs() {
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <AppProvider>
+      <MainApp />
+    </AppProvider>
+  );
+}
+
+function MainApp() {
+  const { isDarkMode } = useTheme();
+
+  return (
+    <NavigationContainer theme={isDarkMode ? DarkTheme : DefaultTheme}>
+      <StatusBar
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        backgroundColor={isDarkMode ? "#121212" : "#FFFFFF"}
+      />
       <Stack.Navigator
         screenOptions={{
           headerTitleAlign: "center",
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          headerStyle: {
+            backgroundColor: isDarkMode ? "#2F2F2F" : "#FFFFFF",
+          },
+          headerTintColor: isDarkMode ? "#FFFFFF" : "#000000",
         }}
       >
-        {/* Principal com abas animadas */}
         <Stack.Screen
           name="Main"
           component={AnimatedTabs}
           options={{ headerShown: false }}
         />
 
-        {/* Telas secundárias */}
         <Stack.Screen
           name="DetalhesVenda"
           component={DetalhesVenda}
-          options={{
-            title: "Detalhes da Venda",
-            headerBackTitle: "Voltar",
-          }}
+          options={{ title: "Detalhes da Venda", headerBackTitle: "Voltar" }}
         />
-
         <Stack.Screen
           name="Configurações"
           component={Configurações}
-          options={{
-            title: "Configurações",
-            headerBackTitle: "Voltar",
-          }}
+          options={{ title: "Configurações", headerBackTitle: "Voltar" }}
         />
-
         <Stack.Screen
           name="DetalhesProdutos"
           component={DetalhesProdutos}
@@ -120,7 +153,6 @@ export default function App() {
             headerBackTitle: "Voltar",
           }}
         />
-
         <Stack.Screen
           name="DetalhesCliente"
           component={DetalhesCliente}
@@ -144,7 +176,6 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     height: 70,
-    backgroundColor: "#fff",
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 5 },

@@ -16,6 +16,11 @@ import {
 import { Ionicons, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { LineChart } from "react-native-chart-kit";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Importa o hook do seu contexto de tema
+import { useTheme } from "../../Context/Provider";
+
 const InfoCard = ({
   value,
   label,
@@ -26,15 +31,35 @@ const InfoCard = ({
 }) => {
   const IconComponent = iconLib || FontAwesome;
 
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+      ]}
+    >
+      1
       <View style={styles.cardHeader}>
-        <View style={styles.iconWrapper}>
+        <View
+          style={[
+            styles.iconWrapper,
+            { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
+          ]}
+        >
           <IconComponent name={icon} size={20} color="#0295ff" />
         </View>
-        <Text style={styles.cardValue}>{value}</Text>
+        <Text
+          style={[styles.cardValue, { color: isDarkMode ? "white" : "#333" }]}
+        >
+          {value}
+        </Text>
       </View>
-      <Text style={styles.labelCard}>
+      <Text
+        style={[styles.labelCard, { color: isDarkMode ? "gray" : "#333" }]}
+      >
         {label}{" "}
         <Text style={isPositive ? styles.positivo : styles.negativo}>
           {variation}
@@ -48,6 +73,9 @@ function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
+  // Pega o estado do tema e a função pra mudar
+  const { isDarkMode } = useTheme();
+
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -57,24 +85,55 @@ function HomeScreen() {
   };
 
   const CardProdutosPopulares = () => (
-    <View style={styles.cardProduto}>
+    <View
+      style={[
+        styles.cardProduto,
+        { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+      ]}
+    >
       <Image
         source={{ uri: "https://via.placeholder.com/80" }}
-        style={styles.imagemProduto}
+        style={[
+          styles.imagemProduto,
+          { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
+        ]}
       />
       <View style={styles.infoProduto}>
-        <Text style={styles.nomeProduto}>Cômoda Capri</Text>
-        <Text style={styles.codigoProduto}>#1023</Text>
+        <Text
+          style={[styles.nomeProduto, { color: isDarkMode ? "white" : "#333" }]}
+        >
+          Cômoda Capri
+        </Text>
+        <Text
+          style={[
+            styles.codigoProduto,
+            { color: isDarkMode ? "gray" : "#333" },
+          ]}
+        >
+          #1023
+        </Text>
       </View>
       <View style={styles.statusProduto}>
         <Text style={styles.statusAtivo}>Ativo</Text>
-        <Text style={styles.vendasProduto}>13 Vendas</Text>
+        <Text
+          style={[
+            styles.vendasProduto,
+            { color: isDarkMode ? "white" : "#333" },
+          ]}
+        >
+          13 Vendas
+        </Text>
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -84,14 +143,27 @@ function HomeScreen() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Cash In Box</Text>
-            <Text>Bom dia</Text>
+            <Text
+              style={[styles.title, { color: isDarkMode ? "white" : "#333" }]}
+            >
+              Cash In Box
+            </Text>
+            <Text style={{ color: isDarkMode ? "gray" : "#333" }}>
+              Bom dia
+            </Text>
           </View>
           <TouchableOpacity
-            style={styles.userIcon}
+            style={[
+              styles.userIcon,
+              { backgroundColor: isDarkMode ? "#2F2F2F" : "#fff" },
+            ]}
             onPress={() => navigation.navigate("Configurações")}
           >
-            <Ionicons name="person" size={20} color="black" />
+            <Ionicons
+              name="person"
+              size={20}
+              color={isDarkMode ? "white" : "#333"}
+            />
           </TouchableOpacity>
         </View>
 
@@ -127,25 +199,56 @@ function HomeScreen() {
           />
         </View>
 
-        <View style={styles.divMeta}>
+        <View
+          style={[
+            styles.divMeta,
+            { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+          ]}
+        >
           <View style={styles.textDivMeta}>
-            <Text style={styles.textMeta}>Meta "2mil faturamento"</Text>
-            <Text style={styles.textMeta}>25%</Text>
+            <Text
+              style={[
+                styles.textMeta,
+                { color: isDarkMode ? "white" : "#333" },
+              ]}
+            >
+              Meta "2mil faturamento"
+            </Text>
+            <Text
+              style={[
+                styles.textMeta,
+                { color: isDarkMode ? "white" : "#333" },
+              ]}
+            >
+              25%
+            </Text>
           </View>
-          <View style={styles.barraProgreçãoMeta}>
+          <View
+            style={[
+              styles.barraProgreçãoMeta,
+              { backgroundColor: isDarkMode ? "#4C4C4C" : "#f9f9f9" },
+            ]}
+          >
             <View style={[styles.progressFill, { width: "25%" }]} />
           </View>
         </View>
 
         <View>
-          <Text style={styles.textProdutosPopulares}>Produtos Populares</Text>
+          <Text
+            style={[
+              styles.textProdutosPopulares,
+              { color: isDarkMode ? "white" : "#333" },
+            ]}
+          >
+            Produtos Populares
+          </Text>
           <CardProdutosPopulares />
           <CardProdutosPopulares />
           <CardProdutosPopulares />
         </View>
 
-        <View style={styles.graficoContainer}>
-          <Text style={styles.tituloGrafico}>Receitas vs Despesas</Text>
+        <View style={[styles.graficoContainer , { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" }]}>
+          <Text style={[styles.tituloGrafico , { color: isDarkMode ? "white" : "#333" }]}>Receitas vs Despesas</Text>
           <LineChart
             data={{
               labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
@@ -166,7 +269,7 @@ function HomeScreen() {
             width={Dimensions.get("window").width - 32}
             height={220}
             chartConfig={{
-              backgroundColor: "#fff",
+              backgroundColor: isDarkMode ? "#4C4C4C" : "#f9f9f9",
               backgroundGradientFrom: "#fff",
               backgroundGradientTo: "#fff",
               decimalPlaces: 0,
@@ -194,99 +297,98 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   scrollView: {
-    padding: 10,
-    marginTop: 10,
+    padding: "2%",
+    marginTop: "2%",
   },
   container: {
     flex: 1,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    paddingHorizontal: 16,
-    backgroundColor: "#fff", // Fundo branco clean
+    paddingHorizontal: "4%",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: "4%",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600", // Deixa menos pesado
+    fontSize: SCREEN_WIDTH * 0.06, // ~24 em telas médias
+    fontWeight: "600",
     color: "#333",
   },
   userIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    width: SCREEN_WIDTH * 0.15,
+    height: SCREEN_WIDTH * 0.15,
+    borderRadius: SCREEN_WIDTH * 0.1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fafafa",
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
   cardsContainer: {
-    marginTop: 10,
+    marginTop: "2%",
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
   textProdutosPopulares: {
-    marginVertical: 10,
-    fontSize: 18,
+    marginVertical: "2%",
+    fontSize: SCREEN_WIDTH * 0.045,
     fontWeight: "600",
     color: "#333",
   },
   card: {
     width: "48%",
-    padding: 15,
-    marginBottom: 15,
+    padding: "4%",
+    marginBottom: "4%",
     borderRadius: 12,
     backgroundColor: "#fff",
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: "#eee",
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: "2%",
   },
   iconWrapper: {
     backgroundColor: "#f0f4f8",
     justifyContent: "center",
     alignItems: "center",
-    height: 40,
-    width: 40,
-    marginRight: 10,
-    borderRadius: 20,
+    height: SCREEN_WIDTH * 0.1,
+    width: SCREEN_WIDTH * 0.1,
+    marginRight: "3%",
+    borderRadius: SCREEN_WIDTH * 0.05,
   },
   cardValue: {
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: SCREEN_WIDTH * 0.04,
     color: "#333",
   },
   labelCard: {
     color: "#777",
-    fontSize: 12,
+    fontSize: SCREEN_WIDTH * 0.03,
   },
   positivo: {
-    color: "#2ecc71", // Verde suave
+    color: "#2ecc71",
     fontWeight: "500",
   },
   negativo: {
-    color: "#e74c3c", // Vermelho suave
+    color: "#e74c3c",
     fontWeight: "500",
   },
   divMeta: {
-    padding: 16,
+    padding: "4%",
     backgroundColor: "#fff",
     borderRadius: 12,
-    marginTop: 10,
+    marginTop: "3%",
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: "#eee",
   },
   textMeta: {
     fontWeight: "500",
-    fontSize: 14,
+    fontSize: SCREEN_WIDTH * 0.035,
     color: "#333",
   },
   textDivMeta: {
@@ -294,75 +396,72 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   barraProgreçãoMeta: {
-    height: 8,
+    height: SCREEN_WIDTH * 0.02,
     backgroundColor: "#f0f0f0",
-    borderRadius: 4,
-    marginTop: 10,
+    borderRadius: SCREEN_WIDTH * 0.01,
+    marginTop: "2%",
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
     backgroundColor: "#0295ff",
-    borderRadius: 4,
+    borderRadius: SCREEN_WIDTH * 0.01,
   },
   cardProduto: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 10,
-    marginVertical: 8,
+    padding: "3%",
+    marginVertical: "2%",
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: "#eee",
   },
   imagemProduto: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
-    backgroundColor: "#f9f9f9",
+    width: SCREEN_WIDTH * 0.2,
+    height: SCREEN_WIDTH * 0.2,
+    borderRadius: SCREEN_WIDTH * 0.02,
+    marginRight: "4%",
   },
   infoProduto: {
     flex: 1,
     justifyContent: "center",
   },
   nomeProduto: {
-    fontSize: 15,
+    fontSize: SCREEN_WIDTH * 0.04,
     fontWeight: "600",
-    color: "#333",
   },
   codigoProduto: {
-    fontSize: 12,
+    fontSize: SCREEN_WIDTH * 0.03,
     color: "#999",
-    marginTop: 4,
+    marginTop: "1%",
   },
   statusProduto: {
     justifyContent: "center",
     alignItems: "flex-end",
   },
   statusAtivo: {
-    fontSize: 12,
+    fontSize: SCREEN_WIDTH * 0.03,
     fontWeight: "600",
     color: "#2ecc71",
-    marginBottom: 4,
+    marginBottom: "1%",
   },
   vendasProduto: {
-    fontSize: 12,
+    fontSize: SCREEN_WIDTH * 0.03,
     color: "#333",
   },
   graficoContainer: {
-    marginTop: 20,
-    backgroundColor: "#fff",
-    padding: 16,
-    marginBottom: 80,
+    marginTop: "5%",
+    padding: "4%",
+    marginBottom: "15%",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#eee",
   },
   tituloGrafico: {
-    fontSize: 16,
+    fontSize: SCREEN_WIDTH * 0.04,
     fontWeight: "600",
-    marginBottom: 10,
+    marginBottom: "2%",
     color: "#333",
   },
 });
