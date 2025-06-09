@@ -12,7 +12,9 @@ import {
 // Importa o hook do seu contexto de tema
 import { useTheme } from "../../Context/Provider";
 
-function DetalhesCliente() {
+function DetalhesCliente({ route }) {
+  const { dados } = route.params;
+
   // Pega o estado do tema e a função pra mudar
   const { isDarkMode } = useTheme();
 
@@ -40,7 +42,7 @@ function DetalhesCliente() {
               <Text
                 style={[styles.nome, { color: isDarkMode ? "white" : "#333" }]}
               >
-                Cliente
+                {dados.nome}
               </Text>
               <View style={styles.vendasInfo}>
                 <View style={styles.vendaItem}>
@@ -91,7 +93,11 @@ function DetalhesCliente() {
           >
             Nome
           </Text>
-          <TextInput style={styles.input} placeholder="Nome do cliente" />
+          <TextInput
+            style={styles.input}
+            placeholder="Nome do cliente"
+            value={dados.nome}
+          />
 
           <Text
             style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}
@@ -110,6 +116,7 @@ function DetalhesCliente() {
             E-mail
           </Text>
           <TextInput
+            value={dados.email}
             style={styles.input}
             placeholder="email@exemplo.com"
             keyboardType="email-address"
@@ -120,7 +127,7 @@ function DetalhesCliente() {
           >
             Código
           </Text>
-          <TextInput style={styles.input} placeholder="1-1" />
+          <TextInput style={styles.input} placeholder="1-1" value={dados.id}/>
 
           <Text
             style={[styles.label, { color: isDarkMode ? "white" : "#333" }]}

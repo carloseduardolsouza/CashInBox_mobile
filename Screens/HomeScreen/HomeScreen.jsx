@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import fetchapi from "../../api/fetchapi";
+import services from "../../services/services";
 import {
   Dimensions,
   View,
@@ -57,9 +59,7 @@ const InfoCard = ({
           {value}
         </Text>
       </View>
-      <Text
-        style={[styles.labelCard, { color: isDarkMode ? "gray" : "#333" }]}
-      >
+      <Text style={[styles.labelCard, { color: isDarkMode ? "gray" : "#333" }]}>
         {label}{" "}
         <Text style={isPositive ? styles.positivo : styles.negativo}>
           {variation}
@@ -70,8 +70,33 @@ const InfoCard = ({
 };
 
 function HomeScreen() {
+  const [relatorios, setRelatorios] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+
+  const [mesesGrafico, setMesesGraficos] = useState([]);
+  const [receitaGrafico, setReceitaGraficos] = useState([]);
+
+  async function buscarRelatorios() {
+    try {
+      const response = await fetchapi.buscarRelatoriosBasicos();
+      const faturamentos = response.faturamento || [];
+
+      setRelatorios(faturamentos);
+
+      const meses = faturamentos.map((dados) => dados.mes);
+      const receitas = faturamentos.map((dados) => dados.faturamento);
+
+      setMesesGraficos(meses);
+      setReceitaGraficos(receitas);
+    } catch (error) {
+      console.error("Erro ao buscar relatórios:", error);
+    }
+  }
+
+  useEffect(() => {
+    buscarRelatorios();
+  }, []);
 
   // Pega o estado do tema e a função pra mudar
   const { isDarkMode } = useTheme();
@@ -148,9 +173,7 @@ function HomeScreen() {
             >
               Cash In Box
             </Text>
-            <Text style={{ color: isDarkMode ? "gray" : "#333" }}>
-              Bom dia
-            </Text>
+            <Text style={{ color: isDarkMode ? "gray" : "#333" }}>Bom dia</Text>
           </View>
           <TouchableOpacity
             style={[
@@ -169,11 +192,11 @@ function HomeScreen() {
 
         <View style={styles.cardsContainer}>
           <InfoCard
-            value="R$ 47.900,00"
+            value={services.formatarCurrency(relatorios?.[6]?.faturamento || 0)}
             icon="money"
             iconLib={FontAwesome}
             label="Faturamento/Mês"
-            variation="+5,8%"
+            variation={relatorios?.[6]?.variacao}
           />
           <InfoCard
             value="R$ 700,00"
@@ -247,19 +270,31 @@ function HomeScreen() {
           <CardProdutosPopulares />
         </View>
 
-        <View style={[styles.graficoContainer , { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" }]}>
-          <Text style={[styles.tituloGrafico , { color: isDarkMode ? "white" : "#333" }]}>Receitas vs Despesas</Text>
+        <View
+          style={[
+            styles.graficoContainer,
+            { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+          ]}
+        >
+          <Text
+            style={[
+              styles.tituloGrafico,
+              { color: isDarkMode ? "white" : "#333" },
+            ]}
+          >
+            Receitas vs Despesas
+          </Text>
           <LineChart
             data={{
-              labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
+              labels: mesesGrafico,
               datasets: [
                 {
-                  data: [5000, 7000, 8000, 6000, 7500, 9000],
+                  data: receitaGrafico,
                   color: (opacity = 1) => `rgba(2, 149, 255, ${opacity})`,
                   strokeWidth: 2,
                 },
                 {
-                  data: [3000, 4000, 4500, 5000, 4200, 6000],
+                  data: [0, 0, 0, 0, 0, 0 , 0],
                   color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
                   strokeWidth: 2,
                 },
@@ -323,7 +358,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fafafa",
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   cardsContainer: {
@@ -344,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: "4%",
     borderRadius: 12,
     backgroundColor: "#fff",
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   cardHeader: {
@@ -383,7 +418,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     marginTop: "3%",
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   textMeta: {
@@ -414,7 +449,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: "3%",
     marginVertical: "2%",
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   imagemProduto: {

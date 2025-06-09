@@ -12,10 +12,12 @@ import {
   Platform,
 } from "react-native";
 
+import services from "../../services/services";
+
 import { Ionicons } from "@expo/vector-icons"; // ícones para dar aquele charme
 
 function DetalhesProdutos({ route }) {
-  const { nomeProduto } = route.params;
+  const { dados, image } = route.params;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -23,34 +25,48 @@ function DetalhesProdutos({ route }) {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.principalInfoProdutos}>
           {/* Imagem */}
-          <TouchableOpacity style={styles.imageBox}>
-            <Ionicons name="camera" size={24} color="#9CA3AF" />
-            <Text style={styles.imageText}>Adicionar Imagem</Text>
-          </TouchableOpacity>
+          <View style={styles.imageBox}>
+            {image && image !== "" ? (
+              <Image
+                source={{ uri: `http://192.168.1.66:3322/uploads/${image}` }}
+                style={{ width: "100%", height: "100%", borderRadius: 8 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <TouchableOpacity style={styles.imageBox}>
+                <Ionicons name="camera" size={24} color="#9CA3AF" />
+                <Text style={styles.imageText}>Adicionar Imagem</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Descrição */}
           <View style={styles.fieldPrincipalInfoProdutos}>
             <Text style={styles.label}>Descrição</Text>
-            <Text style={styles.textValue}>{nomeProduto}</Text>
+            <Text style={styles.textValue}>{dados.nome}</Text>
           </View>
         </View>
 
         {/* Preço de Venda */}
         <View style={styles.field}>
           <Text style={styles.label}>Preço de Venda</Text>
-          <Text style={styles.textValue}>R$ 20,00</Text>
+          <Text style={styles.textValue}>
+            {services.formatarCurrency(dados.preco_venda)}
+          </Text>
         </View>
 
         {/* Markup */}
         <View style={styles.field}>
           <Text style={styles.label}>Markup</Text>
-          <Text style={styles.textValue}>0 %</Text>
+          <Text style={styles.textValue}>{dados.markup} %</Text>
         </View>
 
         {/* Preço de Custo */}
         <View style={styles.field}>
           <Text style={styles.label}>Preço de Custo</Text>
-          <Text style={styles.textValue}>R$ 0,00</Text>
+          <Text style={styles.textValue}>
+            {services.formatarCurrency(dados.preco_custo)}
+          </Text>
         </View>
 
         {/* Controlar Estoque */}
@@ -62,13 +78,13 @@ function DetalhesProdutos({ route }) {
         {/* Estoque */}
         <View style={styles.field}>
           <Text style={styles.label}>Estoque Atual</Text>
-          <Text style={styles.textValue}>0</Text>
+          <Text style={styles.textValue}>{dados.estoque_atual}</Text>
         </View>
 
         {/* Estoque Minimo */}
         <View style={styles.field}>
           <Text style={styles.label}>Estoque Minimo</Text>
-          <Text style={styles.textValue}>0</Text>
+          <Text style={styles.textValue}>{dados.estoque_minimo}</Text>
         </View>
 
         {/* Categoria */}
@@ -114,7 +130,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   fieldPrincipalInfoProdutos: {
-    padding: 10
+    padding: 10,
   },
   field: {
     marginBottom: 20,

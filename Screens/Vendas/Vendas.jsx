@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import services from "../../services/services";
 import {
   View,
   Text,
@@ -14,16 +14,29 @@ import {
   TextInput,
 } from "react-native";
 
-// Importa o hook do seu contexto de tema
 import { useTheme } from "../../Context/Provider";
+import { useState, useEffect } from "react";
+import fetchapi from "../../api/fetchapi";
 
-function CardVenda({ numero, pagamento, valor, itens, descricao, hora }) {
+function CardVenda({ dados }) {
   const navigation = useNavigation();
-  // Pega o estado do tema e a função pra mudar
   const { isDarkMode } = useTheme();
+  const [produtosVenda , setProdutosVenda] = useState([])
+
+  if (!dados) return null; // segurança básica
+
+  async function buscarProdutosVenda() {
+    await fetchapi.buscarProdutosVenda(dados.id).then((response) => setProdutosVenda(response));
+  }
+
+  useEffect(() => {
+    buscarProdutosVenda()
+  }, []);
 
   return (
-    <TouchableOpacity onPress={() => navigation.navigate("DetalhesVenda")}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("DetalhesVenda", { dados: dados , produtos: produtosVenda })}
+    >
       <View
         style={[
           styles.cardVenda,
@@ -37,78 +50,90 @@ function CardVenda({ numero, pagamento, valor, itens, descricao, hora }) {
           <Text
             style={[styles.numero, { color: isDarkMode ? "white" : "#333" }]}
           >
-            Nº {numero} • {pagamento}
+            Nº {dados.id} • {services.formatarDataCurta(dados.data_venda)}
           </Text>
           <Text
             style={[styles.valor, { color: isDarkMode ? "white" : "#333" }]}
           >
-            R$ {valor} : {itens} Item{itens > 1 ? "s" : ""}
+            {services.formatarCurrency(dados.valor_total)} •{" "}
+            {produtosVenda.length} Itens
           </Text>
           <Text
             style={[styles.descricao, { color: isDarkMode ? "gray" : "#333" }]}
           >
-            {descricao}
+            {dados.nome_cliente}
           </Text>
         </View>
         <Text style={[styles.hora, { color: isDarkMode ? "white" : "#333" }]}>
-          {hora}
+          {services.formatarHorario(dados.data_venda)}
         </Text>
       </View>
     </TouchableOpacity>
   );
 }
 
-function Vendas({ navigation }) {
+function Vendas() {
+  const [resultadosVendas, setResultadosVendas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [vendas, setVendas] = useState([
-    {
-      id: 1,
-      numero: "0003-1",
-      pagamento: "Dinheiro",
-      valor: "0,00",
-      itens: 1,
-      descricao: "1x headset",
-      hora: "00:21",
-      data: "2 JUN",
-    },
-    {
-      id: 2,
-      numero: "0002-1",
-      pagamento: "Dinheiro",
-      valor: "20,00",
-      itens: 2,
-      descricao: "1x headset 1x cômoda capri...",
-      hora: "12:01",
-      data: "31 MAI 2025",
-    },
-  ]);
+  const [search, setSearch] = useState("");
 
-  const total = vendas
-    .reduce((acc, venda) => acc + parseFloat(venda.valor.replace(",", ".")), 0)
-    .toFixed(2);
+  const { isDarkMode } = useTheme();
+
+  const carregarVendas = async () => {
+    try {
+      const response = await fetchapi.buscarVendas();
+      setResultadosVendas(response);
+    } catch (error) {
+      console.error("Erro ao buscar vendas:", error);
+    }
+  };
+
+  useEffect(() => {
+    carregarVendas();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setVendas((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          numero: `000${prev.length + 1}-1`,
-          pagamento: "Dinheiro",
-          valor: "10,00",
-          itens: 1,
-          descricao: "1x item novo",
-          hora: "12:10",
-          data: "2 JUN",
-        },
-      ]);
-      setRefreshing(false);
-    }, 1000);
+    carregarVendas().finally(() => setRefreshing(false));
   };
 
-  // Pega o estado do tema e a função pra mudar
-  const { isDarkMode } = useTheme();
+  const totalVendas = resultadosVendas.reduce(
+    (total, venda) => total + (venda.valor_total || 0),
+    0
+  );
+
+  const vendasFiltradas = resultadosVendas.filter((venda) =>
+    venda.id.toString().includes(search)
+  );
+
+  const renderVendas = () => {
+    let ultimaData = null;
+
+    return vendasFiltradas.map((venda) => {
+      const dataFormatada = services.formatarDataCurta(venda.data_venda);
+
+      const mostrarData = dataFormatada !== ultimaData;
+      ultimaData = dataFormatada;
+
+      return (
+        <View key={venda.id}>
+          {mostrarData && (
+            <View style={styles.dataContainer}>
+              <Text
+                style={[
+                  styles.dataTexto,
+                  { color: isDarkMode ? "white" : "#333" },
+                ]}
+              >
+                {dataFormatada}
+              </Text>
+            </View>
+          )}
+          <CardVenda dados={venda} />
+        </View>
+      );
+    });
+  };
 
   return (
     <SafeAreaView
@@ -122,39 +147,35 @@ function Vendas({ navigation }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={[styles.periodo , { color: isDarkMode ? "white" : "#333" }]}>Últimos 7 dias</Text>
-        <Text style={[styles.total , { color: isDarkMode ? "white" : "#333" }]}>Total: R$ {total}</Text>
+        <Text
+          style={[styles.periodo, { color: isDarkMode ? "white" : "#333" }]}
+        >
+          Últimos 7 dias
+        </Text>
+        <Text style={[styles.total, { color: isDarkMode ? "white" : "#333" }]}>
+          Total: {services.formatarCurrency(totalVendas)}
+        </Text>
 
         <View style={styles.searchContainer}>
           <TextInput
-            placeholder="Código"
-            style={styles.input}
-            placeholderTextColor="#888"
+            placeholder="Buscar por código"
+            style={[styles.input, { color: isDarkMode ? "white" : "#000" }]}
+            placeholderTextColor={isDarkMode ? "#aaa" : "#888"}
+            value={search}
+            onChangeText={setSearch}
+            keyboardType="numeric"
           />
         </View>
 
-        {vendas.map((venda, index) => (
-          <View key={venda.id}>
-            {/* Mostra a data se for diferente da anterior */}
-            {(index === 0 || venda.data !== vendas[index - 1].data) && (
-              <View style={styles.dataContainer}>
-                <Text style={[styles.dataTexto , { color: isDarkMode ? "white" : "#333" }]}>
-                  {venda.data === "2 JUN" ? "HOJE, 2 JUN" : venda.data}
-                </Text>
-              </View>
-            )}
-
-            <CardVenda
-              numero={venda.numero}
-              pagamento={venda.pagamento}
-              valor={venda.valor}
-              itens={venda.itens}
-              descricao={venda.descricao}
-              hora={venda.hora}
-            />
-          </View>
-        ))}
+        {vendasFiltradas.length > 0 ? (
+          renderVendas()
+        ) : (
+          <Text style={{ color: isDarkMode ? "white" : "#333", marginTop: 20 }}>
+            Nenhuma venda encontrada.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -164,7 +185,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    backgroundColor: "#fff",
   },
   scrollContainer: {
     padding: 20,
@@ -172,11 +192,11 @@ const styles = StyleSheet.create({
   periodo: {
     fontSize: 20,
     fontWeight: "bold",
+    marginBottom: 5,
   },
   total: {
     fontSize: 16,
     marginBottom: 10,
-    color: "#333",
   },
   searchContainer: {
     marginBottom: 15,
@@ -186,7 +206,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    color: "#000",
   },
   dataContainer: {
     marginTop: 15,
@@ -194,13 +213,12 @@ const styles = StyleSheet.create({
   },
   dataTexto: {
     fontWeight: "bold",
-    color: "#333",
+    fontSize: 14,
   },
   cardVenda: {
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#f9f9f9",
     marginBottom: 10,
     borderRadius: 10,
     borderColor: "#ddd",
@@ -226,12 +244,10 @@ const styles = StyleSheet.create({
   },
   descricao: {
     fontSize: 12,
-    color: "#777",
     marginTop: 2,
   },
   hora: {
     fontSize: 12,
-    color: "#888",
   },
 });
 

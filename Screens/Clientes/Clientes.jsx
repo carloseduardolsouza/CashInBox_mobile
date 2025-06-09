@@ -6,55 +6,128 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  RefreshControl,
   StatusBar,
   TextInput,
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useState, useEffect } from "react";
 
 // Importa o hook do seu contexto de tema
 import { useTheme } from "../../Context/Provider";
 
+// IMPORTANTE: falta importar o fetchapi
+import fetchapi from "../../api/fetchapi"; // ajuste conforme o caminho correto
+
 function Clientes() {
+  //Controlador de Estados
+  const [resultClientes, setResultClientes] = useState([]);
+  const [pesquisar, setPesquisar] = useState("");
+  const [erroApi, setErroApi] = useState(false); // tava faltando
+  const [refreshing, setRefreshing] = useState(false);
+
   const navigation = useNavigation();
 
-  // Pega o estado do tema e a função pra mudar
+  // Pega o estado do tema
   const { isDarkMode } = useTheme();
 
-  const CardClientes = ({ nomeCliente }) => (
+  const buscarClientes = async () => {
+    await fetchapi
+      .buscarCliente(pesquisar)
+      .then((response) => {
+        setErroApi(false);
+        setResultClientes(response);
+      })
+      .catch(() => {
+        setErroApi(true);
+      });
+  };
+
+  useEffect(() => {
+    buscarClientes();
+  }, []);
+
+  const CardClientes = ({ dados }) => (
     <TouchableOpacity
-      style={[styles.card , { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" }]}
-      onPress={() => navigation.navigate("DetalhesCliente")}
+      style={[
+        styles.card,
+        { backgroundColor: isDarkMode ? "#2F2F2F" : "#f9f9f9" },
+      ]}
+      onPress={() => navigation.navigate("DetalhesCliente" , {dados: dados})}
     >
       <Image
         source={{ uri: "https://via.placeholder.com/50" }}
-        style={[styles.avatar , { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" }]}
+        style={[
+          styles.avatar,
+          { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
+        ]}
       />
       <View style={styles.info}>
-        <Text style={[styles.name , { color: isDarkMode ? "white" : "#333" }]}>{nomeCliente}</Text>
-        <Text style={[styles.code , { color: isDarkMode ? "gray" : "#333" }]}>Código 001</Text>
+        <Text style={[styles.name, { color: isDarkMode ? "white" : "#333" }]}>
+          {dados.nome}
+        </Text>
+        <Text style={[styles.code, { color: isDarkMode ? "gray" : "#333" }]}>
+          Código {dados.id}
+        </Text>
       </View>
     </TouchableOpacity>
   );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    buscarClientes().finally(() => setRefreshing(false));
+  };
+
   return (
-    <SafeAreaView style={[styles.container , { backgroundColor: isDarkMode ? "#121212" : "#fff" }]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={[styles.title , { color: isDarkMode ? "white" : "#333" }]}>Clientes(0)</Text>
+          <Text
+            style={[styles.title, { color: isDarkMode ? "white" : "#333" }]}
+          >
+            Clientes({resultClientes.length})
+          </Text>
 
-          <TouchableOpacity style={styles.buttonAdicionarCliente}>
+          <TouchableOpacity
+            style={styles.buttonAdicionarCliente}
+            onPress={() => navigation.navigate("AdicionarCliente")} // ajuste de usabilidade
+          >
             <Text style={styles.buttonText}>+</Text>
           </TouchableOpacity>
         </View>
 
-        <TextInput placeholder="Pesquisar cliente" style={styles.searchInput} placeholderTextColor="#888"/>
+        <TextInput
+          placeholder="Pesquisar cliente"
+          style={[styles.searchInput, { color: isDarkMode ? "white" : "#333" }]}
+          placeholderTextColor="#888"
+          value={pesquisar}
+          onChangeText={setPesquisar}
+          onSubmitEditing={buscarClientes}
+        />
 
         <View>
-          <CardClientes nomeCliente={"Carlos Eduardo Souza"} />
-          <CardClientes nomeCliente={"Julia dos santos Bahr"} />
+          {erroApi ? (
+            <Text style={{ color: "red", marginTop: 10 }}>
+              Erro ao buscar clientes.
+            </Text>
+          ) : (
+            resultClientes.map((dados, index) => (
+              <CardClientes key={index} dados={dados} />
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -72,7 +145,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
@@ -96,18 +168,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginTop: 20,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
   searchInput: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -116,12 +176,10 @@ const styles = StyleSheet.create({
     color: "#000",
     marginVertical: 15,
   },
-
   card: {
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#f9f9f9",
     marginBottom: 10,
     borderRadius: 10,
     borderColor: "#ddd",
@@ -132,7 +190,6 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 12,
-    backgroundColor: "#ccc", // fallback caso a imagem não carregue
   },
   info: {
     flex: 1,
@@ -140,11 +197,9 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
   },
   code: {
     fontSize: 14,
-    color: "#666",
     marginTop: 4,
   },
 });

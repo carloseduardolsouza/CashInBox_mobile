@@ -6,23 +6,77 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  RefreshControl,
   StatusBar,
   TextInput,
   Image,
 } from "react-native";
-// Importa o hook do seu contexto de tema
+
 import { useTheme } from "../../Context/Provider";
 import { useNavigation } from "@react-navigation/native";
+import fetchapi from "../../api/fetchapi";
+import { useState, useEffect } from "react";
+import services from "../../services/services";
 
 function Estoque() {
+  const navigation = useNavigation();
+
+  // Estado dos produtos, loading e pesquisa
+  const [resultProdutos, setResultProdutos] = useState([]);
+  const [loadingProdutos, setLoadingProdutos] = useState(false); // Começa false, pq logo busca
+  const [refreshing, setRefreshing] = useState(false);
+  const [pesquisar, setPesquisar] = useState("");
+
+  // Busca produtos, atualizado para lidar com loading corretamente
+  const buscarProdutos = async () => {
+    setLoadingProdutos(true);
+    try {
+      const resultado = await fetchapi.buscarProdutos(pesquisar);
+      setResultProdutos(resultado);
+    } catch (err) {
+      console.error("Erro ao buscar produtos:", err);
+      setResultProdutos([]); // limpa caso erro
+    }
+    setLoadingProdutos(false);
+  };
+
+  // Rodar a busca no load e sempre que 'pesquisar' mudar
+  useEffect(() => {
+    buscarProdutos();
+  }, [pesquisar]);
+
+  // Handle pesquisa no input
+  const handlePesquisarChange = (text) => {
+    setPesquisar(text);
+  };
+
+  // Função pro botão adicionar cliente (produto?), aqui só loga mesmo
   const handleAdicionarCliente = () => {
     console.log("Adicionar cliente clicado!");
   };
-  const navigation = useNavigation();
 
-  const CardProdutos = ({ nomeProdutos, preco }) => {
-    // Pega o estado do tema e a função pra mudar
-    const { isDarkMode } = useTheme();
+  // Hook tema
+  const { isDarkMode } = useTheme();
+
+  // Card do produto - cuidado com o state dentro de map (se renderizar muita coisa pode travar)
+  // Talvez melhorar futuramente para carregar imagens fora do card e passar via props
+  const CardProdutos = ({ dados }) => {
+    const [image, setImage] = useState(null);
+
+    async function carregarImagem() {
+      try {
+        const imagens = await fetchapi.buscarImagensProduto(dados.id);
+        if (imagens && imagens.length > 0) {
+          setImage(imagens[0].imagem_path);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar imagem do produto:", error);
+      }
+    }
+
+    useEffect(() => {
+      carregarImagem();
+    }, []);
 
     return (
       <TouchableOpacity
@@ -32,43 +86,56 @@ function Estoque() {
         ]}
         onPress={() =>
           navigation.navigate("DetalhesProdutos", {
-            nomeProduto: nomeProdutos,
+            dados: dados,
+            image: image
           })
         }
       >
         <Image
-          source={{ uri: "https://via.placeholder.com/50" }}
+          source={{ uri: `http://192.168.1.66:3322/uploads/${image}` }}
           style={[
             styles.avatar,
             { backgroundColor: isDarkMode ? "#4C4C4C" : "#fff" },
           ]}
         />
+
         <View style={styles.info}>
           <Text style={[styles.name, { color: isDarkMode ? "white" : "#333" }]}>
-            {nomeProdutos}
+            {dados.nome_produto || dados.nome}
           </Text>
           <Text style={[styles.code, { color: isDarkMode ? "gray" : "#333" }]}>
-            {preco}
+            {services.formatarCurrency(dados.preco_venda)}
           </Text>
         </View>
       </TouchableOpacity>
     );
   };
 
-  // Pega o estado do tema e a função pra mudar
-  const { isDarkMode } = useTheme();
+  const onRefresh = () => {
+    setRefreshing(true);
+    buscarProdutos().finally(() => setRefreshing(false));
+  };
 
   return (
-    <SafeAreaView style={[styles.container , { backgroundColor: isDarkMode ? "#121212" : "#fff" }]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#121212" : "#fff" },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
           <Text
             style={[styles.title, { color: isDarkMode ? "white" : "#333" }]}
           >
-            Produtos(0)
+            Produtos ({resultProdutos.length})
           </Text>
 
           <TouchableOpacity
@@ -81,17 +148,30 @@ function Estoque() {
 
         <TextInput
           placeholder="Pesquisar Produto"
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: isDarkMode ? "white" : "#333" }]}
           placeholderTextColor="#888"
+          value={pesquisar}
+          onChangeText={handlePesquisarChange}
+          returnKeyType="search"
+          onSubmitEditing={buscarProdutos} // busca quando aperta enter
         />
 
         <View>
-          <CardProdutos nomeProdutos={"Comoda Capri"} preco={"R$ 200,00"} />
-          <CardProdutos nomeProdutos={"Beliche Casal"} preco={"R$ 500,00"} />
-          <CardProdutos
-            nomeProdutos={"Guarda Roupas Cedro"}
-            preco={"R$ 1.500,00"}
-          />
+          {loadingProdutos ? (
+            <Text
+              style={{
+                textAlign: "center",
+                marginTop: 20,
+                color: isDarkMode ? "#ccc" : "#333",
+              }}
+            >
+              Carregando produtos...
+            </Text>
+          ) : (
+            resultProdutos.map((dados) => (
+              <CardProdutos key={dados.id.toString()} dados={dados} />
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -133,18 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginTop: 20,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
   searchInput: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -153,7 +221,6 @@ const styles = StyleSheet.create({
     color: "#000",
     marginVertical: 15,
   },
-
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -169,7 +236,6 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 5,
     marginRight: 12,
-    backgroundColor: "#ccc", // fallback caso a imagem não carregue
   },
   info: {
     flex: 1,

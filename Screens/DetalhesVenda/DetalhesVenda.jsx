@@ -1,4 +1,4 @@
-import React from "react";
+import services from "../../services/services";
 import {
   View,
   SafeAreaView,
@@ -12,7 +12,7 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "../../Context/Provider";
 
-const CardItemDetalhesVenda = () => {
+const CardItemDetalhesVenda = ({dados}) => {
   const { isDarkMode } = useTheme();
 
   return (
@@ -23,19 +23,21 @@ const CardItemDetalhesVenda = () => {
       ]}
     >
       <Text style={[styles.cardText, { color: isDarkMode ? "#fff" : "#333" }]}>
-        1x
+        {dados.quantidade}x
       </Text>
       <Text style={[styles.cardText, { color: isDarkMode ? "#fff" : "#333" }]}>
-        Headset Gamer
+        {dados.produto_nome}
       </Text>
       <Text style={[styles.cardText, { color: isDarkMode ? "#fff" : "#333" }]}>
-        R$ 199,90
+        {services.formatarCurrency(dados.valor_total)}
       </Text>
     </View>
   );
 };
 
-function DetalhesVenda() {
+function DetalhesVenda({route}) {
+  const { dados , produtos } = route.params;
+
   const { isDarkMode } = useTheme();
 
   const handleGerarPDF = () => console.log("Gerar PDF clicado");
@@ -54,7 +56,7 @@ function DetalhesVenda() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={[styles.valor, { color: isDarkMode ? "#fff" : "#333" }]}>
-            R$ 199,90
+            {services.formatarCurrency(dados.valor_total)}
           </Text>
           <FontAwesome name="money" size={40} color="#4CAF50" />
         </View>
@@ -62,7 +64,7 @@ function DetalhesVenda() {
         <Text
           style={[styles.numeroVenda, { color: isDarkMode ? "gray" : "#333" }]}
         >
-          Venda Nº 0003-1 APP
+          Venda Nº {dados.id} DESKTOP
         </Text>
 
         <View style={styles.infoLinha}>
@@ -72,7 +74,8 @@ function DetalhesVenda() {
           <Text
             style={[styles.infoText, { color: isDarkMode ? "#fff" : "#666" }]}
           >
-            2 de Junho de 2025 - 00:21
+            {services.formatarDataCurta(dados.data_venda)} - 
+            {services.formatarHorario(dados.data_venda)}
           </Text>
         </View>
 
@@ -83,7 +86,7 @@ function DetalhesVenda() {
           <Text
             style={[styles.infoText, { color: isDarkMode ? "#fff" : "#666" }]}
           >
-            Administrador
+            {dados.nome_funcionario}
           </Text>
         </View>
 
@@ -97,11 +100,11 @@ function DetalhesVenda() {
               { color: isDarkMode ? "#fff" : "#777" },
             ]}
           >
-            Quantidade: 10
+            Quantidade: {produtos.length}
           </Text>
 
-          {Array.from({ length: 2 }).map((_, index) => (
-            <CardItemDetalhesVenda key={index} />
+          {produtos.map((dados) => (
+            <CardItemDetalhesVenda dados={dados} />
           ))}
         </View>
 
@@ -117,7 +120,7 @@ function DetalhesVenda() {
               { color: isDarkMode ? "#fff" : "#555" },
             ]}
           >
-            Desconto: R$ 0,00 / 0%
+            Desconto: {dados.descontos}
           </Text>
           <Text
             style={[
@@ -125,12 +128,12 @@ function DetalhesVenda() {
               { color: isDarkMode ? "#fff" : "#555" },
             ]}
           >
-            Acréscimos: R$ 0,00 / 0%
+            Acréscimos: {dados.acrescimos}
           </Text>
           <Text
             style={[styles.totalText, { color: isDarkMode ? "#fff" : "#000" }]}
           >
-            Total: R$ 199,90
+            Total: {services.formatarCurrency(dados.valor_total)}
           </Text>
         </View>
       </ScrollView>
