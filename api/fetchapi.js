@@ -1,4 +1,4 @@
-const API_URL = "http://192.168.1.66:3322";
+const API_URL = "http://192.168.1.67:3322";
 
 const buscarVendas = async (filtro, pesquisa) => {
   if (filtro == undefined && pesquisa == undefined) {
